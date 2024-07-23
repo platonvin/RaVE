@@ -1,13 +1,7 @@
-#include "../src/raytracer_simd.h"
-// #include "../src/raytracer_simd.h"
-// #include <immintrin.h>
+#include "../src/raytracer.h"
 
 #include <assert.h>
 #include <stdint.h>
-
-// typedef struct quat{
-//     float x, y, z, w;
-// } quat;
 
 float dot4(rave_vec4 q1, rave_vec4 q2){
     return 
@@ -21,13 +15,13 @@ rave_vec4 quat_mul(rave_vec4 q1, rave_vec4 q2){
     rave_vec3 q1_yzw = (rave_vec3){q1.y, q1.z, q1.w};
     rave_vec3 q2_yzw = (rave_vec3){q2.y, q2.z, q2.w};
     
-    r.x = q1.x*q2.x - dot3(q1_yzw, q2_yzw);
+    r.x = q1.x*q2.x - rave_dot3(q1_yzw, q2_yzw);
 
 
     // r.yzw = q1.x*q2.yzw + q2.x*q1.yzw + cross3( q1.yzw, q2.yzw );
-    r.y = mul3(q2_yzw, q1.x).x + mul3(q1_yzw, q2.x).x + cross3(q1_yzw, q2_yzw).x;
-    r.z = mul3(q2_yzw, q1.x).y + mul3(q1_yzw, q2.x).y + cross3(q1_yzw, q2_yzw).y;
-    r.w = mul3(q2_yzw, q1.x).z + mul3(q1_yzw, q2.x).z + cross3(q1_yzw, q2_yzw).z;
+    r.y = rave_mul3(q2_yzw, q1.x).x + rave_mul3(q1_yzw, q2.x).x + rave_cross3(q1_yzw, q2_yzw).x;
+    r.z = rave_mul3(q2_yzw, q1.x).y + rave_mul3(q1_yzw, q2.x).y + rave_cross3(q1_yzw, q2_yzw).y;
+    r.w = rave_mul3(q2_yzw, q1.x).z + rave_mul3(q1_yzw, q2.x).z + rave_cross3(q1_yzw, q2_yzw).z;
     
     return r;
 }
@@ -35,7 +29,7 @@ rave_vec4 quat_square(rave_vec4 q){
     rave_vec4 r;
     rave_vec3 q_yzw = (rave_vec3){q.y, q.z, q.w};
 
-    r.x = q.x*q.x - dot3(q_yzw, q_yzw);
+    r.x = q.x*q.x - rave_dot3(q_yzw, q_yzw);
 
     // r.yzw = 2.0*q.x*q.yzw;
     r.y = 2.0*q.x*q.y;
@@ -68,7 +62,6 @@ float check_julia(rave_vec3 pos, rave_vec4 C){
 	float m2  = 0.0;
     
     for(int i=0; i < MAX_ITERATIONS; i++) {
-        // printf("z %f %f %f %f\n", z.x, z.y, z.z, z.w);
         //for ^3
 		// z = quat_cube( z ) + C;
 		// z.x = quat_cube( z ).x + C.x;

@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <stdio.h>
 
 // Define platform-specific macros
 #if defined(_WIN32) || defined(_WIN64)
@@ -9,7 +8,7 @@
     #include <unistd.h>
     #define UNIX
 #else
-    #error "Unsupported platform"
+    #error define sysconf(_SC_NPROCESSORS_ONLN) alternative
 #endif
 
 int get_core_count() {
@@ -21,8 +20,6 @@ int get_core_count() {
     num_cores = sysinfo.dwNumberOfProcessors;
 #elif defined(UNIX)
     num_cores = sysconf(_SC_NPROCESSORS_ONLN);
-#else
-#error define sysconf(_SC_NPROCESSORS_ONLN) alternative
 #endif
 
     assert(num_cores != 0);
