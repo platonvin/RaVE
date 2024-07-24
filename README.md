@@ -18,19 +18,20 @@ C99 sse4 + pthreads CPU grid-aligned voxel raytracer created for internal needs 
 
 You may also just compile one of your objects files with raytracer.c included, just make sure that you link with only implementation
 
-## #Defines
-to use custom voxel type instead of uint8_t use
-```c
-#define RAVE_CUSTOM_VOXEL_TYPE custom_voxel_type //uint8_t is defualt
-#include "raytracer.h"
-```
+* ## #Defines
+    to use custom voxel type instead of uint8_t use
+    ```c
+    #define RAVE_CUSTOM_VOXEL_TYPE custom_voxel_type //uint8_t is defualt
+    #include "raytracer.h"
+    ```
 
-to disable SIMD use 
-```C
-#define RAVE_NO_SIMD
-#include "raytracer.h"
-```
+    to disable SIMD use 
+    ```C
+    #define RAVE_NO_SIMD
+    #include "raytracer.h"
+    ```
 
+## Integration
 you need to implement all of the following functions in your code to make RaVE be able to interact with your voxel engine:
 ```C
 rave_voxel rave_get_voxel(int x, int y, int z);
