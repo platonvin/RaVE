@@ -1,7 +1,15 @@
 #pragma once
-#ifndef SIMD_RAVE_H
-#define SIMD_RAVE_H
+#ifndef RAVE_H
+#define RAVE_H
 
+/*
+to use __custom__type__ instead of uint8_t 
+#define RAVE_CUSTOM_VOXEL_TYPE __custom__type__ 
+#define RAVE_EMPTY_VOXEL __custom__type__empty__voxel__value__
+
+to disable SIMD 
+#define RAVE_NO_SIMD
+*/
 #include <assert.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -37,13 +45,21 @@ typedef RAVE_CUSTOM_VOXEL_TYPE rave_voxel;
 #else
 typedef uint8_t rave_voxel;
 #endif
-rave_voxel  rave_get_voxel(int x, int y, int z);
-rave_vec3 rave_get_ray_pos(int local_x, int local_y, int local_z);
-rave_vec3 rave_get_ray_dir(int local_x, int local_y, int local_z);
-void   rave_store_light(int local_x, int local_y, int local_z, rave_vec3 light);
-Material rave_get_material(rave_voxel voxel);
+
+#ifdef RAVE_CUSTOM_VOXEL_TYPE
+// rave_empty_voxel = RAVE_EMPTY_VOXEL;
+#else
+// rave_empty_voxel = 0;
+#endif
+
+rave_voxel rave_get_voxel(int x, int y, int z);
+rave_vec3  rave_get_ray_pos(int local_x, int local_y, int local_z);
+rave_vec3  rave_get_ray_dir(int local_x, int local_y, int local_z);
+void       rave_store_light(int local_x, int local_y, int local_z, rave_vec3 light);
+Material   rave_get_material(rave_voxel voxel);
 extern uint32_t max_steps;
 extern uint32_t max_reflections;
+extern rave_voxel rave_empty_voxel;
 
 float     rave_dot3(rave_vec3 v1, rave_vec3 v2);
 rave_vec3 rave_reflect3(rave_vec3 I, rave_vec3 N);
@@ -57,9 +73,12 @@ rave_vec3 rave_clamp3(rave_vec3 v, float minVal, float maxVal);
 rave_vec3 rave_cross3(rave_vec3 v1, rave_vec3 v2);
 
 void rave_dispatch(int count_x, int count_y, int count_z);
-void rave_sync_simd();
 void rave_init();
 
+//TODO: reuse pthreads, explicit sync
+// void rave_sync();
+
+//printf __m128
 #define __pf(v) {\
 float* ptr = &v;\
 printf(#v "= %f %f %f %f\n", ptr[0], ptr[1], ptr[2], ptr[3]);\
@@ -73,4 +92,4 @@ printf(#v "= %d %d %d %d\n", ptr[0], ptr[1], ptr[2], ptr[3]);\
 }
 #endif
 
-#endif // SIMD_RAVE_H
+#endif // RAVE_H

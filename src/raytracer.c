@@ -42,7 +42,10 @@ __m128 rave_normal_oriented_hemisphere_point_simd(__m128 normal){
     r = _mm_mul_ps(r, _mm_set1_ps(sign));
 
     return r;
+
     
+    //this is commented SIMD version, but somehow SIMD not in a loop is slower. Probably due to non-SIMD functions to interact with rest of the code
+
     // rave_vec3 v = random_sphere_point();
     // __m128 r = _mm_setr_ps(v.x, v.y, v.z, 0); 
     // __m128 dot = _mm_dp_ps(r, normal, 0xFF);
@@ -127,7 +130,7 @@ int rave_cast_ray_simd(__m128 rayOrigin, __m128 rayDirection,
     rave_init_tvals_simd(&tMax, &tDelta, &voxel_pos, rayOrigin, rayDirection); //does not intersect with scene
 
     int* _vp = (int*) &voxel_pos;
-    int current_voxel = rave_get_voxel(_vp[0], _vp[1], _vp[2]);
+    rave_voxel current_voxel = rave_get_voxel(_vp[0], _vp[1], _vp[2]);
 
     int iterations = 0;
 
@@ -162,7 +165,7 @@ int rave_cast_ray_simd(__m128 rayOrigin, __m128 rayDirection,
         int* _vp = (int*) &voxel_pos;
         current_voxel = rave_get_voxel(_vp[0], _vp[1], _vp[2]);
 
-        if (current_voxel != 0){
+        if (current_voxel != rave_empty_voxel){
             block_hit = true;
             break;
         }
@@ -389,7 +392,7 @@ int rave_cast_ray(rave_vec3 rayOrigin, rave_vec3 rayDirection,
 
     rave_init_tvals(&tMax, &tDelta, &voxel_pos, rayOrigin, rayDirection);
 
-    int current_voxel = rave_get_voxel(voxel_pos.x, voxel_pos.y, voxel_pos.z);
+    rave_voxel current_voxel = rave_get_voxel(voxel_pos.x, voxel_pos.y, voxel_pos.z);
 
     assert(max_steps != 0);
 
@@ -420,7 +423,7 @@ int rave_cast_ray(rave_vec3 rayOrigin, rave_vec3 rayDirection,
         }
         current_voxel = rave_get_voxel(voxel_pos.x, voxel_pos.y, voxel_pos.z);
         
-        if (current_voxel != 0){
+        if (current_voxel != rave_empty_voxel){
             block_hit = true;
             break;
         }
@@ -551,7 +554,7 @@ void rave_dispatch_ray(int local_x, int local_y, int local_z){
     );
 
 #ifdef RAVE_NO_SIMD
-    rave_vec3 light = trace_ray(_origin, _direction);
+    rave_vec3 light = rave_trace_ray(_origin, _direction);
     rave_store_light(local_x, local_y, local_z, 
     (rave_vec3){light.x, light.y, light.z}
     );
@@ -566,8 +569,10 @@ void rave_dispatch_ray(int local_x, int local_y, int local_z){
 void* rave_dispatch_ray_wave(void* _args){
     dispatch_args_t* args = _args;
     
+    //should have different seed (initial "next") to prevent same direction 
     srand((*args).initial*42);
     
+    //this is not directly tiled to prevent some threads getting stuck in complicated areas while other finished
     for(int i=(*args).initial; i<(*args).total; i+=(*args).step){
         int x =  i                     % (*args).total_x ;
         int y = (i /  (*args).total_x) % (*args).total_y ;

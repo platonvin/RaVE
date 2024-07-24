@@ -7,6 +7,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static int width = 512, height = 512;
+uint32_t max_reflections = 12;
+uint32_t max_steps = 256;
+const int sample_count = 100;
+rave_voxel rave_empty_voxel = 0;
+
 void delete_if_exists(const char *filename) {
     assert(filename != NULL);
     FILE *file = fopen(filename, "r");
@@ -23,19 +29,22 @@ enum voxel_e {
     SPHERE,
     BOX,
 };
-
+//you probably want to have bounding box to prevent long traversals
+//you may also enable (uncomment) return on low accumulated reflection and make bounding box black (material with {0,0,0} color)
+//also, prefer precomputing voxel grids so it is just 3d array element access
+const int BOUNDS = 30;
 rave_voxel get_bounding_box_voxel(int x, int y, int z){
-    if(x==-30) {
+    if(x == -BOUNDS) {
         return RED_WALL;
     } else 
-    if (x==+30) {
+    if (x == +BOUNDS) {
         return GREEN_WALL;
     } else 
-    if(z==+30){
+    if(z == +BOUNDS){
         return WHITE_CEILING;
     } else
-    if ((x<=-30) || (y<=-30) || (z<=-30) || 
-        (x>=+30) || (y>=+30) || (z>=+30)) {
+    if ((x <= -BOUNDS) || (y <= -BOUNDS) || (z <= -BOUNDS) || 
+        (x >= +BOUNDS) || (y >= +BOUNDS) || (z >= +BOUNDS)) {
         return WHITE_WALL;
     }
     else 
@@ -67,12 +76,12 @@ rave_voxel get_sphere_voxel(int x, int y, int z){
 }
 rave_voxel get_light_voxel(int x, int y, int z){
     if(
-        (z==29) 
+        (z == (BOUNDS-1)) 
         && 
         (
-            ((x>-15) && (x<+15)) 
+            ((x > -(BOUNDS/2)) && (x < +(BOUNDS/2))) 
             && 
-            ((y>-15) && (y<+15))
+            ((y > -(BOUNDS/2)) && (y < +(BOUNDS/2)))
         )) return LIGHT;
     else return EMPTY;
 }
@@ -83,11 +92,6 @@ rave_voxel rave_get_voxel(int x, int y, int z){
     rave_voxel light_voxel = get_light_voxel(x,y,z);
     return box_voxel + sphere_voxel + light_voxel + cuboid_voxel;
 }
-
-static int width = 512, height = 512;
-uint32_t max_reflections = 7;
-uint32_t max_steps = 256;
-const int sample_count = 50;
 
 static rave_vec3 camera_ray_dir;
 static rave_vec3 camera_ray_dir_plane;
@@ -137,7 +141,7 @@ Material rave_get_material(rave_voxel voxel){
         }
         case WHITE_WALL:{
             mat.color = (rave_vec3){0.8,0.8,0.8};
-            mat.roughness = 0.03;
+            // mat.roughness = 0.00;
             break;
         }
         case WHITE_CEILING:{
@@ -170,14 +174,13 @@ stored_light* image;
 static uint8_t *data;
 static tga_info *info;
 void rave_store_light(int x, int y, int z, rave_vec3 light){
-
     image[x + width*y].r += (light.x / ((float)sample_count));
     image[x + width*y].g += (light.y / ((float)sample_count));
     image[x + width*y].b += (light.z / ((float)sample_count));
 }
 
 int main(int argc, char *argv[]) {
-    const char* out_name = "image.tga";
+    const char* out_name = "Cornell_box_image.tga";
     image = malloc(sizeof(stored_light) * width*height);
     assert(image != NULL);
 

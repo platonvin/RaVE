@@ -1,6 +1,5 @@
 #include <assert.h>
 
-// Define platform-specific macros
 #if defined(_WIN32) || defined(_WIN64)
     #include <windows.h>
     #define WINDOWS

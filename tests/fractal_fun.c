@@ -1,4 +1,6 @@
-#include "../src/raytracer.h"
+#define RAVE_CUSTOM_VOXEL_TYPE int
+
+#include "../src/raytracer.c"
 
 #include <assert.h>
 #include <stdint.h>
@@ -54,31 +56,39 @@ rave_vec4 quat_cube(rave_vec4 q){
         q.w * (3.0*q2.x - q2.y - q2.z - q2.w)};
 }
 
-const float ESCAPE_THRESHOLD = 42.0;
-const int   MAX_ITERATIONS = 10; //actually, very few steps needed
+const float   ESCAPE_THRESHOLD = 20.0;
+const float CONVERGE_THRESHOLD = 0.3;
+const int   MAX_ITERATIONS = 12; //actually, very few steps needed
 
-float check_julia(rave_vec3 pos, rave_vec4 C){
+float check_julia(rave_vec3 pos, rave_vec4 C, int* converged_i){
     rave_vec4 z = (rave_vec4){pos.x, pos.y, pos.z, 0.0};
-	float m2  = 0.0;
-    
+	float m2 = 0.0;
+    bool did_converge = false;
+
     for(int i=0; i < MAX_ITERATIONS; i++) {
         //for ^3
 		// z = quat_cube( z ) + C;
-		// z.x = quat_cube( z ).x + C.x;
-		// z.y = quat_cube( z ).y + C.y;
-		// z.z = quat_cube( z ).z + C.z;
-		// z.w = quat_cube( z ).w + C.w;
+        // printf("%f:%f:%f:%f\n", z.x,z.y,z.z,z.w);
+        rave_vec4 z3 = quat_cube(z);
+		z.x = z3.x + C.x;
+		z.y = z3.y + C.y;
+		z.z = z3.z + C.z;
+		z.w = z3.w + C.w;
+        // printf("%f:%f:%f:%f\n", z.x,z.y,z.z,z.w);
 
         //for ^2
 		// z = quat_square( z ) + C;
-		z.x = quat_square( z ).x + C.x;
-		z.y = quat_square( z ).y + C.y;
-		z.z = quat_square( z ).z + C.z;
-		z.w = quat_square( z ).w + C.w;
         
         m2 = quat_length_squared(z);
-        // printf("m2 %f\n", m2);
-        if(m2 > ESCAPE_THRESHOLD) break;
+        // printf("%d:%f\n", i, m2);
+        if(m2 > ESCAPE_THRESHOLD) {
+            (*converged_i) = i;
+            break;
+        }
+        if((m2 < CONVERGE_THRESHOLD) && (!did_converge)){
+            (*converged_i) = i;
+            break;
+        }
 	}
 
 	return m2;        
