@@ -16,7 +16,7 @@ C99 sse4 + pthreads CPU grid-aligned voxel raytracer created for internal needs 
 * Compile **raytracer.c** (if using any defines, make sure they are defined)
 * Link with compiled object file
 
-You may also just compile one of your objects files with raytracer.c included, just make sure that you link with only implementation
+You may also just compile one of your objects files with raytracer.c included, just make sure that you link with only one implementation
 
 * ## #Defines
     to use custom voxel type instead of uint8_t use
