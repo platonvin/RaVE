@@ -9,10 +9,10 @@
 
 #include <stdio.h>
 
-static int width = 512, height = 512;
+static int width = 256, height = 256;
 uint32_t max_reflections = 7;
 uint32_t max_steps = 512;
-const int sample_count = 50;
+const int sample_count = 20;
 rave_voxel rave_empty_voxel = 0;
 
 static rave_vec3 camera_ray_dir;

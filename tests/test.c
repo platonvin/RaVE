@@ -7,10 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static int width = 512, height = 512;
+static int width = 256, height = 256;
 uint32_t max_reflections = 12;
 uint32_t max_steps = 256;
-const int sample_count = 100;
+const int sample_count = 10;
 rave_voxel rave_empty_voxel = 0;
 
 void delete_if_exists(const char *filename) {
@@ -214,7 +214,6 @@ int main(int argc, char *argv[]) {
 
     error_code = tga_save_from_info(data, info, out_name);
     assert(error_code == TGA_NO_ERROR);
-
     tga_free_data(data);
     tga_free_info(info);
     free(image);
