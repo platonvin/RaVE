@@ -1,3 +1,5 @@
+[![C/C++ CI](https://github.com/platonvin/RaVE/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/platonvin/RaVE/actions/workflows/c-cpp.yml)
+
 # RaVE
 multithreaded simd Raytracer for Voxel Engines
 
